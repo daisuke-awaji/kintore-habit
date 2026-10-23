@@ -53,6 +53,12 @@ describe('ポーズの計算', () => {
       }
     }
   });
+  it('腕立ての「上」のポーズでは腕がまっすぐ伸びている', () => {
+    for (const id of ['knee-pushup', 'pushup', 'wall-pushup']) {
+      const sk = skeletonOf(EXERCISES.find((e) => e.id === id)!.poses.top);
+      expect(dist(sk.shoulder, sk.hand), id).toBeGreaterThanOrEqual(BODY.upperArm + BODY.forearm - 0.5);
+    }
+  });
   it('補間の途中でも、指定のない関節は長さが保たれる', () => {
     const ex = exerciseFor('lower', 2);
     const sk = interpolateSkeleton(ex.poses.top, ex.poses.bottom, 0.5);

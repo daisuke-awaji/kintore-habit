@@ -74,7 +74,7 @@ const WALL_BOTTOM: PoseSpec = { neck: [142.2, 48.5], hip: [122.5, 85.6], hand: [
 const KNEE_PUSH_TOP: PoseSpec = { neck: [133.9, 85.3], hip: [100, 110], hand: [132, 128], foot: [58, 116], toe: [52, 111] };
 const KNEE_PUSH_BOTTOM: PoseSpec = { neck: [139.6, 104.1], hip: [100, 118], hand: [132, 128], foot: [58, 116], toe: [52, 111] };
 
-const PUSH_TOP: PoseSpec = { neck: [130.5, 91], hip: [91.1, 105.5], hand: [128, 128], foot: [46, 122], toe: [40, 128] };
+const PUSH_TOP: PoseSpec = { neck: [129.3, 88.1], hip: [90.4, 103.9], hand: [126, 128], foot: [46, 122], toe: [40, 128] };
 const PUSH_BOTTOM: PoseSpec = { neck: [134.9, 107.9], hip: [93.4, 114.5], hand: [128, 128], foot: [46, 122], toe: [40, 128] };
 
 const PLANK: PoseSpec = { neck: [134.4, 105.1], hip: [93.1, 113], elbow: [131, 126], hand: [154, 126.5], foot: [46, 122], toe: [40, 128] };
