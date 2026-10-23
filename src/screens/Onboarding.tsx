@@ -6,7 +6,7 @@ import { exerciseFor } from '../domain/exercises';
 import { navigate } from '../router';
 import { useAppData } from '../state/AppData';
 
-export const ANCHORS = ['朝起きたら', '歯みがきの後', 'お風呂の前', '帰宅したら', '寝る前'];
+export const ANCHORS = ['朝起きたら', '歯みがきの後', '昼ごはんの後', '帰宅したら', 'お風呂の前', '寝る前'];
 
 const PROMISES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'check', title: '毎日やらなくてOK', text: '目標は「週◯回」。休む日も計画のうちです。' },
@@ -14,11 +14,16 @@ const PROMISES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'heart', title: '登録なし', text: '記録はこの端末の中にだけ保存されます。' },
 ];
 
-export function AnchorPicker({ value, onChange }: { value: string | null; onChange: (v: string | null) => void }) {
+/** きっかけを選ぶ。startUnselected のときは、最初はどれも選ばれていない状態にする（「決めない」を初期値にしない） */
+export function AnchorPicker({
+  value, onChange, startUnselected = false,
+}: { value: string | null; onChange: (v: string | null) => void; startUnselected?: boolean }) {
   const isPreset = value !== null && ANCHORS.includes(value);
-  const [mode, setMode] = useState<'preset' | 'custom' | 'none'>(value === null ? 'none' : isPreset ? 'preset' : 'custom');
+  const [mode, setMode] = useState<'unset' | 'preset' | 'custom' | 'none'>(
+    value === null ? (startUnselected ? 'unset' : 'none') : isPreset ? 'preset' : 'custom',
+  );
   const [custom, setCustom] = useState(!isPreset && value ? value : '');
-  const selected = mode === 'none' ? '__none' : mode === 'custom' ? '__custom' : value;
+  const selected = mode === 'unset' ? null : mode === 'none' ? '__none' : mode === 'custom' ? '__custom' : value;
   return (
     <>
       <ChoiceGroup
@@ -79,7 +84,7 @@ export function Onboarding() {
     <main className="screen onboarding">
       <p className="steps" aria-label={`3ステップ中の${step + 1}つめ`}>
         {[0, 1, 2].map((i) => (
-          <span key={i} className={`step-dot${i <= step ? ' is-on' : ''}`} aria-hidden="true" />
+          <span key={i} className={`step-dot${i === step ? ' is-on' : ''}`} aria-hidden="true" />
         ))}
       </p>
 
@@ -139,7 +144,7 @@ export function Onboarding() {
 
           <h2>いつやりますか？</h2>
           <p className="hint">毎日していることの後に決めておくと、思い出しやすくなります。</p>
-          <AnchorPicker value={anchor} onChange={setAnchor} />
+          <AnchorPicker value={anchor} onChange={setAnchor} startUnselected />
 
           <p className="note">最初は、いちばんやさしい「椅子スクワット」から始めます。終わったあとに、きつさに合わせて変えられます。</p>
           <div className="sticky-cta">
