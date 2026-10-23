@@ -31,7 +31,7 @@
   :root:not([data-theme='light']) {
     --bg: #0a0a0a;
     --surface: #141414;
-    --surface-2: #1f1f1f;
+    --surface-2: #262626;
     --fg: #f2f2f2;
     --muted: #bdbdbd;
     --subtle: #a3a3a3;
@@ -57,7 +57,7 @@
 :root[data-theme='dark'] {
   --bg: #0a0a0a;
   --surface: #141414;
-  --surface-2: #1f1f1f;
+  --surface-2: #262626;
   --fg: #f2f2f2;
   --muted: #bdbdbd;
   --subtle: #a3a3a3;
@@ -534,11 +534,6 @@ button.week-btn:hover { background: var(--surface-2); }
 @media (min-width: 40rem) {
   .sheet { margin: auto; border-radius: 20px; }
 }
-
-/* ===== 開発用 ===== */
-.gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-.gallery-grid figure { margin: 0; background: var(--surface-2); border-radius: var(--radius-sm); padding: 0.25rem; }
-.gallery-grid figcaption { text-align: center; font-size: 0.75rem; color: var(--muted); }
 
 /* ===== 動きを減らす ===== */
 @media (prefers-reduced-motion: reduce) {

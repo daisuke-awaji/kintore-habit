@@ -1,12 +1,9 @@
-import { useEffect } from 'react';
 import { addDays, weekStart, type DateKey } from '../domain/date';
 import { exerciseFor } from '../domain/exercises';
 import { createDefaultData, type AppData, type Session, type StrengthArea } from '../domain/schema';
-import { navigate } from '../router';
-import { useAppData } from '../state/AppData';
 
-/** 開発用：画面確認のための記録を入れる（#/dev/seed?s=month|welcome|rest） */
-function build(name: string, today: DateKey): AppData {
+/** 画面テスト用の記録（month: 32日分 / welcome: 9日あいた人 / rest: 今日が回復日） */
+export function buildScenario(name: string, today: DateKey): AppData {
   const d = createDefaultData();
   const start = addDays(today, -31);
   const areas: StrengthArea[] = ['lower', 'upper', 'core'];
@@ -32,14 +29,4 @@ function build(name: string, today: DateKey): AppData {
     weekGoals,
     levels: { lower: 2, upper: 1, core: 2 },
   };
-}
-
-export function DevSeed({ scenario }: { scenario: string }) {
-  const { replaceAll, today } = useAppData();
-  useEffect(() => {
-    replaceAll(build(scenario, today));
-    navigate('/', undefined, { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return null;
 }

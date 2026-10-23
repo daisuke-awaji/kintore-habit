@@ -6,8 +6,6 @@ import { Done } from './screens/Done';
 import { Home } from './screens/Home';
 import { Log } from './screens/Log';
 import { Onboarding } from './screens/Onboarding';
-import { DevSeed } from './screens/DevSeed';
-import { PoseGallery } from './screens/PoseGallery';
 import { Settings } from './screens/Settings';
 import { Workout } from './screens/Workout';
 import { useAppData } from './state/AppData';
@@ -29,8 +27,6 @@ export function App() {
     initVoices();
   }, []);
 
-  if (route.path === '/dev/poses') return <PoseGallery />;
-  if (route.path === '/dev/seed') return <DevSeed scenario={route.params.get('s') ?? 'month'} />;
   if (!data.onboarded) return <Onboarding />;
 
   switch (route.path) {
