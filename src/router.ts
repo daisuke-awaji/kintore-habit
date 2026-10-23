@@ -38,6 +38,9 @@ export function useRoute(): Route {
       window.scrollTo(0, 0);
     };
     window.addEventListener('hashchange', onChange);
+    // 子の画面が先に navigate した場合（イベントを受け取る前）にも合わせる
+    const now = parseHash(window.location.hash);
+    setRoute((prev) => (prev.path === now.path && prev.params.toString() === now.params.toString() ? prev : now));
     return () => window.removeEventListener('hashchange', onChange);
   }, []);
   return route;
