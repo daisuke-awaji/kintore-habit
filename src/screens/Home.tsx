@@ -166,7 +166,7 @@ export function Home() {
             </div>
           </section>
 
-          <button type="button" className="btn btn-ghost btn-block" onClick={() => app.setRestDay(today, true)}>
+          <button type="button" className="btn btn-secondary btn-block" onClick={() => app.setRestDay(today, true)}>
             今日は休む（回復日にする）
           </button>
         </>
@@ -175,7 +175,7 @@ export function Home() {
       {data.startDate && (
         <section className="stats" aria-label="これまでの記録">
           <Stat label="通算" value={totalDays(data)} unit="回" />
-          <Stat label="目標を達成した週" value={achievedWeekCount(data)} unit="週" />
+          <Stat label="達成した週" value={achievedWeekCount(data)} unit="週" />
           <Stat label="始めてから" value={dayNumberSinceStart(data, today)} unit="日目" />
         </section>
       )}

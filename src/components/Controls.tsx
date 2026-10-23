@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Icon } from './Icon';
 
 interface Option<T extends string | number> {
   value: T;
@@ -20,7 +21,8 @@ export function ChoiceGroup<T extends string | number>({
           className={`choice${value === o.value ? ' is-on' : ''}`}
           onClick={() => onChange(o.value)}
         >
-          {o.label}
+          {value === o.value && <Icon name="check" size={16} strokeWidth={3} />}
+          <span>{o.label}</span>
         </button>
       ))}
     </div>

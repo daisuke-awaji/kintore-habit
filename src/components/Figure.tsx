@@ -9,14 +9,14 @@ function Props({ prop }: { prop?: Exercise['prop'] }) {
   if (prop === 'chair') {
     return (
       <g className="fig-prop">
-        <path d="M58 64 V128 M58 100 H90 M90 100 V128" />
+        <path d="M58 64 V131 M58 100 H90 M90 100 V131" />
       </g>
     );
   }
   if (prop === 'wall') {
     return (
       <g className="fig-prop">
-        <path d="M172 6 V128" />
+        <path d="M172 6 V131" />
         <path className="fig-hatch" d="M172 20 l8 -8 M172 44 l8 -8 M172 68 l8 -8 M172 92 l8 -8 M172 116 l8 -8" />
       </g>
     );
@@ -28,7 +28,7 @@ export function FigureSvg({ skeleton, prop, label, className }: { skeleton: Skel
   const s = skeleton;
   return (
     <svg className={`figure ${className ?? ''}`} viewBox="0 0 200 140" role="img" aria-label={label}>
-      <line className="fig-floor" x1="8" y1="129.5" x2="192" y2="129.5" />
+      <line className="fig-floor" x1="8" y1="132" x2="192" y2="132" />
       <Props prop={prop} />
       {s.foot2 && s.knee2 && (
         <path className="fig-back" d={`M${p(s.hip)} L${p(s.knee2)} L${p(s.foot2)} L${p(s.toe2 ?? s.foot2)}`} />

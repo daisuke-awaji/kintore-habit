@@ -153,12 +153,6 @@ export function Workout({ params }: { params: URLSearchParams }) {
         <h1>{exercise.name}</h1>
         <p className="muted">{exercise.summary}</p>
         <div className="figure-box"><PreviewFigure exercise={exercise} className="figure-lg" /></div>
-        <section className="card" aria-labelledby="points-title">
-          <h2 id="points-title">ポイント</h2>
-          <ol className="points">
-            {exercise.points.map((p) => <li key={p}>{p}</li>)}
-          </ol>
-        </section>
         <div className="caution">
           <Icon name="alert" />
           <div>
@@ -166,6 +160,12 @@ export function Workout({ params }: { params: URLSearchParams }) {
             <p>{COMMON_CAUTION}</p>
           </div>
         </div>
+        <section className="card" aria-labelledby="points-title">
+          <h2 id="points-title">ポイント</h2>
+          <ol className="points">
+            {exercise.points.map((p) => <li key={p}>{p}</li>)}
+          </ol>
+        </section>
         <section className="card compact" aria-label="運動中の合図">
           <Toggle
             label="音声ガイド"

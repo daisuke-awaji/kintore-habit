@@ -94,7 +94,7 @@ export function Log() {
       <h1>記録</h1>
       <section className="stats" aria-label="これまでの記録">
         <Stat label="通算" value={totalDays(data)} unit="回" />
-        <Stat label="目標を達成した週" value={achievedWeekCount(data)} unit="週" />
+        <Stat label="達成した週" value={achievedWeekCount(data)} unit="週" />
         <Stat label="合計" value={totalMinutes(data)} unit="分" />
       </section>
 
