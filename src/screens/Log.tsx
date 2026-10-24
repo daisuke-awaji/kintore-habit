@@ -122,8 +122,6 @@ export function Log() {
         </ul>
       </section>
 
-      <p className="hint">1日に何回やっても1回と数えます。日付を押すと、7日前までの記録を追加・削除できます。</p>
-
       {weeks.map((ws) => {
         const count = weekCount(data, ws);
         const goal = goalForWeek(data, ws);

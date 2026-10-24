@@ -1,6 +1,7 @@
 export type IconName =
   | 'check' | 'home' | 'list' | 'gear' | 'pause' | 'play' | 'close' | 'chevron-left' | 'chevron-right'
-  | 'volume' | 'volume-off' | 'moon' | 'alert' | 'download' | 'upload' | 'trash' | 'plus' | 'info' | 'heart';
+  | 'volume' | 'volume-off' | 'moon' | 'alert' | 'download' | 'upload' | 'trash' | 'plus' | 'info' | 'heart'
+  | 'voice' | 'note' | 'vibrate' | 'share' | 'plus-square' | 'clock' | 'lock' | 'arrow-right' | 'shield';
 
 const PATHS: Record<IconName, string> = {
   check: 'M5 12.5l4.5 4.5L19 7.5',
@@ -22,6 +23,15 @@ const PATHS: Record<IconName, string> = {
   plus: 'M12 5v14M5 12h14',
   info: 'M12 22a10 10 0 100-20 10 10 0 000 20zM12 11v6M12 7h.01',
   heart: 'M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z',
+  voice: 'M4 5h16v11H10l-5 4v-4H4zM8 9.5h8M8 12.5h5',
+  note: 'M9 18V6l10-2v12M9 18a3 3 0 11-6 0 3 3 0 016 0zM19 16a3 3 0 11-6 0 3 3 0 016 0z',
+  vibrate: 'M8.5 4h7a1 1 0 011 1v14a1 1 0 01-1 1h-7a1 1 0 01-1-1V5a1 1 0 011-1zM4 8v8M20 8v8M2 10v4M22 10v4',
+  share: 'M12 3v11M8 7l4-4 4 4M7 10H5v11h14V10h-2',
+  'plus-square': 'M5 4h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1zM12 8v8M8 12h8',
+  clock: 'M12 22a10 10 0 100-20 10 10 0 000 20zM12 7v5l3.5 2',
+  lock: 'M6 11h12v10H6zM8.5 11V7.5a3.5 3.5 0 017 0V11',
+  'arrow-right': 'M5 12h14M13 6l6 6-6 6',
+  shield: 'M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6l8-3zM8.5 12l2.5 2.5 4.5-5',
 };
 
 export function Icon({ name, size = 20, strokeWidth = 2 }: { name: IconName; size?: number; strokeWidth?: number }) {

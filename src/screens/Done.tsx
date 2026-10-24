@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { ChoiceGroup } from '../components/Controls';
+import { ChoiceGroup, LevelMeter } from '../components/Controls';
+import { StaticFigure } from '../components/Figure';
 import { Icon } from '../components/Icon';
+import { InstallHint } from '../components/InstallHint';
 import { WeekStrip } from '../components/WeekStrip';
-import { weekStart } from '../domain/date';
+import { addDays, weekDays, weekStart, weekdayJa } from '../domain/date';
 import { exerciseFor, getExercise } from '../domain/exercises';
 import { levelProposal, suggestMenu, type LevelProposal } from '../domain/menu';
 import { FEELING_LABEL, type Feeling } from '../domain/schema';
@@ -38,8 +40,13 @@ export function Done({ params }: { params: URLSearchParams }) {
   const next = getExercise(suggestMenu(data, today).exerciseId)!;
   const askFeeling = !session.stoppedForPain && session.kind !== 'other';
 
+  const thisWeek = weekDays(ws);
+  const nextDays = firstEver ? [addDays(session.date, 2), addDays(session.date, 3)] : [];
+  const suggest = nextDays.filter((d) => thisWeek.includes(d));
+  const atMax = session.feeling === 'easy' && !proposal && !!ex && ex.area !== 'recovery' && ex.level === 3;
+
   const subtitle = firstEver
-    ? '最初の1分、おつかれさまでした。次は2〜3日のうちに、もう1回やってみましょう。'
+    ? '最初の1分、おつかれさまでした。'
     : firstOfDay
       ? `通算${totalDays(data)}回目です。`
       : `今日は${minutesOn(data, session.date)}分できました。`;
@@ -64,7 +71,10 @@ export function Done({ params }: { params: URLSearchParams }) {
           <h2 id="done-week">今週</h2>
           <p className="week-count"><strong>{count}</strong> / {goal}回</p>
         </div>
-        <WeekStrip data={data} weekStartKey={ws} today={today} size="sm" />
+        <WeekStrip data={data} weekStartKey={ws} today={today} size="sm" suggest={suggest} />
+        {nextDays.length > 0 && (
+          <p className="next-chip"><span className="next-ring" aria-hidden="true" />次は {nextDays.map((d) => weekdayJa(d)).join('・')}曜ごろ</p>
+        )}
         <p className="week-msg">{count === goal && firstOfDay ? '今週の目標を達成しました！' : weekMessage(count, goal)}</p>
       </section>
 
@@ -79,14 +89,35 @@ export function Done({ params }: { params: URLSearchParams }) {
               app.updateSession(session.id, { feeling: v });
               setDecision(null);
             }}
-            options={(['hard', 'ok', 'easy'] as Feeling[]).map((f) => ({ value: f, label: FEELING_LABEL[f] }))}
+            variant="tile"
+            options={(['hard', 'ok', 'easy'] as Feeling[]).map((f) => ({
+              value: f,
+              name: FEELING_LABEL[f],
+              label: (
+                <>
+                  <LevelMeter level={f === 'hard' ? 3 : f === 'ok' ? 2 : 1} size="md" />
+                  <span className="tile-label">{FEELING_LABEL[f]}</span>
+                </>
+              ),
+            }))}
           />
           {session.feeling === 'ok' && <p className="note">ちょうどいいですね。このまま続けましょう。</p>}
-          {session.feeling === 'easy' && !proposal && ex && ex.area !== 'recovery' && ex.level === 3 && (
-            <p className="note">いちばん上のレベルです。物足りない日は「もう1分」もできます。</p>
+          {atMax && ex && (
+            <p className="level-now"><span className="level-name">{ex.name}</span><LevelMeter level={3} /></p>
           )}
           {proposal && decision === null && (
             <div className="proposal">
+              <p className="level-change" aria-hidden="true">
+                <span className="level-card">
+                  <StaticFigure exercise={exerciseFor(proposal.area, proposal.from)} className="figure-thumb" />
+                  <LevelMeter level={proposal.from} size="sm" />
+                </span>
+                <Icon name="arrow-right" size={22} />
+                <span className="level-card is-next">
+                  <StaticFigure exercise={exerciseFor(proposal.area, proposal.to)} className="figure-thumb" />
+                  <LevelMeter level={proposal.to} size="sm" />
+                </span>
+              </p>
               <p>
                 {proposal.direction === 'up' ? '次から' : '次からは'}「{exerciseFor(proposal.area, proposal.to).name}」
                 {proposal.direction === 'up' ? 'にレベルを上げますか？' : 'にしますか？'}
@@ -107,27 +138,32 @@ export function Done({ params }: { params: URLSearchParams }) {
             </div>
           )}
           {decision?.kind === 'accepted' && (
-            <p className="note">
-              次から「{exerciseFor(decision.proposal.area, decision.proposal.to).name}」にします。レベルは設定からいつでも変えられます。
+            <p className="level-now">
+              <Icon name="check" size={18} strokeWidth={3} />
+              <span className="level-name">次から {exerciseFor(decision.proposal.area, decision.proposal.to).name}</span>
+              <LevelMeter level={decision.proposal.to} />
             </p>
           )}
           {decision?.kind === 'kept' && <p className="note">このまま続けましょう。</p>}
         </section>
       )}
 
-      {firstEver && isIOS() && !isStandalone() && (
-        <div className="banner banner-info" role="status">
-          <Icon name="info" />
-          <p>iPhoneのSafariでは、しばらく開かないと記録が消えることがあります。共有ボタンから「ホーム画面に追加」しておくと安心です。</p>
-        </div>
-      )}
+      {firstEver && isIOS() && !isStandalone() && <InstallHint />}
 
-      <div className="stack">
-        <button type="button" className="btn btn-primary btn-xl btn-block" onClick={() => navigate('/', undefined, { replace: true })}>
+      <div className="sticky-cta">
+        <button
+          type="button"
+          className={`btn btn-xl btn-block ${atMax ? 'btn-secondary' : 'btn-primary'}`}
+          onClick={() => navigate('/', undefined, { replace: true })}
+        >
           今日へ
         </button>
-        <button type="button" className="btn btn-secondary btn-block" onClick={() => navigate('/workout', { ex: next.id }, { replace: true })}>
-          もう1分やる（{next.name}）
+        <button
+          type="button"
+          className={`btn btn-block ${atMax ? 'btn-primary btn-xl' : 'btn-secondary'}`}
+          onClick={() => navigate('/workout', { ex: next.id }, { replace: true })}
+        >
+          <Icon name="plus" /> もう1分（{next.name}）
         </button>
       </div>
     </main>

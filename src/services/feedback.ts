@@ -115,3 +115,11 @@ export function vibrate(pattern: number | number[]): void {
     // 何もしない
   }
 }
+
+/** 設定をオンにしたときの試し：どんな合図かをその場で体験してもらう */
+export function sampleCue(kind: 'voice' | 'sound' | 'vibration'): void {
+  unlockAudio();
+  if (kind === 'voice') speak('キープ');
+  else if (kind === 'sound') playCue('hold');
+  else vibrate(120);
+}

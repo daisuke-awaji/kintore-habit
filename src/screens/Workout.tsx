@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { Toggle } from '../components/Controls';
+import { Dots, LevelMeter, Toggle } from '../components/Controls';
 import { FigureSvg, PreviewFigure } from '../components/Figure';
 import { Icon } from '../components/Icon';
 import { Sheet } from '../components/Sheet';
@@ -9,7 +9,7 @@ import { AREA_LABEL } from '../domain/schema';
 import { useWakeLock } from '../hooks/useWakeLock';
 import { useWorkoutRunner } from '../hooks/useWorkoutRunner';
 import { navigate } from '../router';
-import { cancelSpeech, japaneseVoiceStatus, playCue, speak, unlockAudio, vibrate } from '../services/feedback';
+import { cancelSpeech, japaneseVoiceStatus, playCue, sampleCue, speak, unlockAudio, vibrate } from '../services/feedback';
 import { requestPersistentStorage, supportsWakeLock, useReducedMotion } from '../services/platform';
 import { useAppData } from '../state/AppData';
 
@@ -147,7 +147,7 @@ export function Workout({ params }: { params: URLSearchParams }) {
         {isFirst && <p className="note">最初の1分です。ゆっくりで大丈夫。できるところまでで、十分です。</p>}
         <p className="tags">
           <span className="tag">{AREA_LABEL[exercise.area]}</span>
-          {exercise.area !== 'recovery' && <span className="tag tag-outline">レベル{exercise.level}</span>}
+          {exercise.area !== 'recovery' && <span className="tag tag-outline"><LevelMeter level={exercise.level} size="sm" showLabel /></span>}
           {light && <span className="tag tag-soft">いつもより軽め</span>}
         </p>
         <h1>{exercise.name}</h1>
@@ -169,20 +169,27 @@ export function Workout({ params }: { params: URLSearchParams }) {
         <section className="card compact" aria-label="運動中の合図">
           <Toggle
             label="音声ガイド"
-            description={
-              voiceStatus === false
-                ? 'この端末では日本語の音声が使えないため、効果音と画面で進めます。'
-                : '「キープ」「あと10秒」などを声で伝えます。'
-            }
+            icon="voice"
+            disabled={voiceStatus === false}
             checked={settings.voice}
-            onChange={(v) => app.updateSettings({ voice: v })}
+            onChange={(v) => {
+              app.updateSettings({ voice: v });
+              if (v) sampleCue('voice');
+            }}
           />
-          <Toggle label="効果音" description="動きの合図を音で知らせます。" checked={settings.sound} onChange={(v) => app.updateSettings({ sound: v })} />
+          <Toggle
+            label="効果音"
+            icon="note"
+            checked={settings.sound}
+            onChange={(v) => {
+              app.updateSettings({ sound: v });
+              if (v) sampleCue('sound');
+            }}
+          />
         </section>
-        <p className="hint">
-          スマホは、離れていても見える場所に置いてください。
-          {!supportsWakeLock() && 'この端末では、運動中に画面が消えることがあります。'}
-        </p>
+        {!supportsWakeLock() && (
+          <p className="chip-warn"><Icon name="moon" size={16} />運動中に画面が消えることがあります</p>
+        )}
         <div className="sticky-cta">
           <button type="button" className="btn btn-primary btn-xl btn-block" onClick={onStart}>
             <Icon name="play" /> はじめる
@@ -237,17 +244,17 @@ export function Workout({ params }: { params: URLSearchParams }) {
       <div className="wo-progress" role="progressbar" aria-label="経過" aria-valuemin={0} aria-valuemax={runner.total} aria-valuenow={Math.floor(runner.elapsed)}>
         <div style={{ width: `${pct}%` }} />
       </div>
-      <p className="wo-sub">
-        {runner.phase === 'countdown'
-          ? '3秒後に始まります'
-          : seg.rep && exercise.reps
-            ? `${seg.rep}回目（目安 ${exercise.reps}回）`
-            : seg.sound === 'hold'
-              ? `キープ ${holdIndex} / ${holds.length}`
-              : seg.sound === 'rest'
-                ? '休けい中。次のキープの準備を'
-                : ' '}
-      </p>
+      <div className="wo-sub">
+        {runner.phase !== 'countdown' && seg.rep && exercise.reps ? (
+          <Dots total={exercise.reps} current={seg.rep} label={`${seg.rep}回目（目安 ${exercise.reps}回）`} />
+        ) : runner.phase !== 'countdown' && holds.length > 1 && (seg.sound === 'hold' || seg.sound === 'rest') ? (
+          <Dots
+            total={holds.length}
+            current={seg.sound === 'rest' ? holdIndex + 1 : holdIndex}
+            label={seg.sound === 'rest' ? `休けい。次は${holdIndex + 1}回目のキープ` : `キープ ${holdIndex} / ${holds.length}`}
+          />
+        ) : null}
+      </div>
 
       <div className="wo-actions">
         <button type="button" className="btn btn-secondary" onClick={() => runner.pause()} disabled={runner.phase !== 'running'}>
@@ -265,10 +272,10 @@ export function Workout({ params }: { params: URLSearchParams }) {
         </button>
       </div>
 
+      {runner.phase === 'paused' && sheet === null && <div className="wo-scrim" aria-hidden="true" onClick={runner.resume} />}
       {runner.phase === 'paused' && sheet === null && (
         <div className="wo-paused card" role="dialog" aria-labelledby="paused-title">
-          <h2 id="paused-title">一時停止中</h2>
-          {runner.autoPaused && <p className="muted">画面を切り替えたので、一時停止しました。</p>}
+          <h2 id="paused-title" className="paused-title"><Icon name="pause" size={22} strokeWidth={3} />一時停止中</h2>
           <button type="button" className="btn btn-primary btn-xl btn-block" onClick={runner.resume}>
             <Icon name="play" /> つづける
           </button>

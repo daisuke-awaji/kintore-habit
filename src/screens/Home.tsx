@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { ChoiceGroup, Stat } from '../components/Controls';
+import { ChoiceGroup, LevelMeter, Stat } from '../components/Controls';
 import { StaticFigure } from '../components/Figure';
 import { Icon } from '../components/Icon';
+import { InstallHint } from '../components/InstallHint';
 import { WeekStrip } from '../components/WeekStrip';
 import { formatDateJa, weekStart } from '../domain/date';
-import { getExercise } from '../domain/exercises';
+import { RECOVERY_ID, exerciseFor, getExercise } from '../domain/exercises';
 import { conditionToday, suggestMenu } from '../domain/menu';
-import { AREA_LABEL, CONDITION_LABEL, type Area, type Condition } from '../domain/schema';
+import { AREA_LABEL, CONDITION_LABEL, type Area, type Condition, type Level } from '../domain/schema';
 import {
   achievedWeekCount, dayNumberSinceStart, goalForWeek, hasSessionOn, isRestDay, isWelcomeBack, minutesOn, totalDays, weekCount,
 } from '../domain/stats';
@@ -47,17 +48,7 @@ export function StorageBanners() {
           <p>記録を保存できませんでした。端末の空き容量を確認してください。</p>
         </div>
       )}
-      {showIOS && (
-        <div className="banner banner-info" role="status">
-          <Icon name="info" />
-          <p>
-            iPhoneのSafariでは、しばらく開かないと記録が消えることがあります。共有ボタンから「ホーム画面に追加」すると、アプリのように使えて、記録も消えにくくなります。
-          </p>
-          <button type="button" className="icon-btn" aria-label="この案内を閉じる" onClick={() => dismiss('ios-install')}>
-            <Icon name="close" />
-          </button>
-        </div>
-      )}
+      {showIOS && <InstallHint onClose={() => dismiss('ios-install')} />}
     </>
   );
 }
@@ -84,7 +75,7 @@ export function Home() {
       <header className="today-head">
         <h1>{formatDateJa(today)}</h1>
         {data.settings.anchor && (
-          <p className="anchor"><Icon name="info" size={16} />{anchorPhrase(data.settings.anchor)}</p>
+          <p className="anchor"><Icon name="clock" size={16} />{anchorPhrase(data.settings.anchor)}</p>
         )}
       </header>
 
@@ -141,7 +132,7 @@ export function Home() {
           <section className="card menu" aria-labelledby="menu-title">
             <p className="tags">
               <span className="tag">{AREA_LABEL[menu.area]}</span>
-              {menu.area !== 'recovery' && <span className="tag tag-outline">レベル{menu.level}</span>}
+              {menu.area !== 'recovery' && <span className="tag tag-outline"><LevelMeter level={menu.level} size="sm" showLabel /></span>}
               {menu.light && <span className="tag tag-soft">いつもより軽め</span>}
             </p>
             <h2 id="menu-title" className="menu-title">{ex.name}</h2>
@@ -155,19 +146,32 @@ export function Home() {
               <Icon name="play" /> 1分はじめる
             </button>
             <div className="other">
-              <p className="block-title">ほかのメニューにする</p>
+              <p className="block-title">ほかのメニュー</p>
               <ChoiceGroup<Area>
-                label="メニューの部位"
-                columns={2}
+                label="ほかのメニュー"
+                variant="tile"
+                columns={4}
                 value={override ?? menu.area}
                 onChange={setOverride}
-                options={(['lower', 'upper', 'core', 'recovery'] as Area[]).map((a) => ({ value: a, label: AREA_LABEL[a] }))}
+                options={(['lower', 'upper', 'core', 'recovery'] as Area[]).map((a) => {
+                  const e = a === 'recovery' ? getExercise(RECOVERY_ID)! : exerciseFor(a, data.levels[a] as Level);
+                  return {
+                    value: a,
+                    name: AREA_LABEL[a],
+                    label: (
+                      <>
+                        <StaticFigure exercise={e} className="figure-thumb" />
+                        <span className="tile-label">{AREA_LABEL[a]}</span>
+                      </>
+                    ),
+                  };
+                })}
               />
             </div>
           </section>
 
-          <button type="button" className="btn btn-secondary btn-block" onClick={() => app.setRestDay(today, true)}>
-            今日は休む（回復日にする）
+          <button type="button" className="btn btn-secondary btn-block btn-rest" onClick={() => app.setRestDay(today, true)}>
+            <span className="rest-mark" aria-hidden="true">休</span>今日は休む
           </button>
         </>
       )}

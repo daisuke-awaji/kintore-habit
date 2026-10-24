@@ -47,3 +47,7 @@ export function useReducedMotion(): boolean {
   }, []);
   return reduced;
 }
+
+export function supportsVibration(): boolean {
+  return typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+}

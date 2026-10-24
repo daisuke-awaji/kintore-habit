@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ChoiceGroup } from '../components/Controls';
+import { ChoiceGroup, LevelMeter } from '../components/Controls';
+import { StaticFigure } from '../components/Figure';
 import { HealthNotes } from '../components/HealthNotes';
 import { Icon, type IconName } from '../components/Icon';
 import { exerciseFor } from '../domain/exercises';
@@ -15,6 +16,17 @@ const PROMISES: { icon: IconName; title: string; text: string }[] = [
 ];
 
 /** きっかけを選ぶ。startUnselected のときは、最初はどれも選ばれていない状態にする（「決めない」を初期値にしない） */
+/** 「きっかけ → 1分」の流れを絵で示す */
+export function AnchorChain({ anchor }: { anchor: string }) {
+  return (
+    <p className="anchor-chain" aria-label={`${anchor}、1分筋トレ`}>
+      <span className="chain-step" aria-hidden="true"><Icon name="clock" size={18} />{anchor}</span>
+      <Icon name="arrow-right" size={18} />
+      <span className="chain-step is-go" aria-hidden="true"><Icon name="play" size={16} />1分</span>
+    </p>
+  );
+}
+
 export function AnchorPicker({
   value, onChange, startUnselected = false,
 }: { value: string | null; onChange: (v: string | null) => void; startUnselected?: boolean }) {
@@ -63,6 +75,7 @@ export function AnchorPicker({
           />
         </label>
       )}
+      {value && <AnchorChain anchor={value} />}
     </>
   );
 }
@@ -117,7 +130,7 @@ export function Onboarding() {
         <>
           <h1>始める前に</h1>
           <section className="card"><HealthNotes /></section>
-          <label className="check">
+          <label className={`check${read ? ' is-on' : ''}`}>
             <input type="checkbox" checked={read} onChange={(e) => setRead(e.target.checked)} />
             読みました
           </label>
@@ -131,22 +144,27 @@ export function Onboarding() {
       {step === 2 && (
         <>
           <h1>週に何回やりますか？</h1>
-          <ChoiceGroup
-            label="週の目標"
-            columns={4}
-            value={goal}
-            onChange={setGoal}
-            options={[1, 2, 3, 4].map((n) => ({ value: n, label: `${n}回` }))}
-          />
-          <p className="hint">
-            国のガイド（厚生労働省）では、筋トレは週2〜3日がすすめられています。まずは週2回がおすすめです。目標はあとから変えられます。
-          </p>
+          <div className="goal-pick">
+            <ChoiceGroup
+              label="週の目標"
+              columns={4}
+              value={goal}
+              onChange={setGoal}
+              options={[1, 2, 3, 4].map((n) => ({ value: n, label: `${n}回` }))}
+            />
+            <p className="goal-guide"><span>国の目安 週2〜3日</span></p>
+          </div>
 
           <h2>いつやりますか？</h2>
-          <p className="hint">毎日していることの後に決めておくと、思い出しやすくなります。</p>
           <AnchorPicker value={anchor} onChange={setAnchor} startUnselected />
 
-          <p className="note">最初は、いちばんやさしい「椅子スクワット」から始めます。終わったあとに、きつさに合わせて変えられます。</p>
+          <section className="first-menu" aria-label="最初のメニュー">
+            <StaticFigure exercise={exerciseFor('lower', 1)} className="figure-thumb" />
+            <span className="first-menu-text">
+              <span className="first-menu-name">{exerciseFor('lower', 1).name}</span>
+              <LevelMeter level={1} size="sm" showLabel />
+            </span>
+          </section>
           <div className="sticky-cta">
             <button type="button" className="btn btn-primary btn-xl btn-block" onClick={() => finish(true)}>
               <Icon name="play" /> 最初の1分をやってみる

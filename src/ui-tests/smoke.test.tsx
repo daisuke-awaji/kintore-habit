@@ -68,4 +68,23 @@ describe('画面が表示できる（落ちない）', () => {
     const r = mount('#/');
     expect(r.container.textContent).not.toMatch(/\d+日(ぶり|休|あい)/);
   });
+
+  it('操作の方法を文章で説明しない（印や見た目で示す）', async () => {
+    const HOWTO = /(押すと|押して|タップ|できます。|変えられます|共有ボタンから|書き出しておいて|準備を)/;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(buildScenario('month', TODAY)));
+    const r = mount('#/');
+    for (const hash of ['#/', '#/log', '#/settings', '#/workout?ex=chair-squat']) {
+      await go(hash);
+      expect(r.container.textContent, hash).not.toMatch(HOWTO);
+    }
+  });
+
+  it('記録：あとから直せる日だけ押せる形になる', async () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(buildScenario('month', TODAY)));
+    const r = mount('#/log');
+    const editable = r.container.querySelectorAll('button.week-btn.is-editable');
+    // 今日を含めて過去7日まで（今日は 2026-10-23 の金曜）
+    expect(editable.length).toBe(8);
+    expect(r.container.querySelectorAll('.week-btn.is-static').length).toBeGreaterThan(0);
+  });
 });
