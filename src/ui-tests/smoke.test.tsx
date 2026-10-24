@@ -87,4 +87,25 @@ describe('画面が表示できる（落ちない）', () => {
     expect(editable.length).toBe(8);
     expect(r.container.querySelectorAll('.week-btn.is-static').length).toBeGreaterThan(0);
   });
+
+  it('今日：いちばん上に「1分はじめる」、その下に今週、体の調子はその後', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(buildScenario('month', TODAY)));
+    const r = mount('#/');
+    const main = r.container.querySelector('main')!;
+    const sections = [...main.querySelectorAll(':scope > section')].map((el) => el.getAttribute('aria-labelledby'));
+    expect(sections.slice(0, 3)).toEqual(['menu-title', 'week-title', 'cond-title']);
+    const first = main.querySelector(':scope > section')!;
+    expect(first.textContent).toContain('1分はじめる');
+    expect(main.textContent!.indexOf('1分はじめる')).toBeLessThan(main.textContent!.indexOf('体の調子'));
+  });
+
+  it('今日：体の調子を変えると、上のメニューが変わる', async () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(buildScenario('month', TODAY)));
+    const r = mount('#/');
+    const sore = r.getByRole('radio', { name: /筋肉痛/ });
+    await act(async () => { sore.click(); });
+    const menu = r.container.querySelector('section.menu')!;
+    expect(menu.classList.contains('is-updated')).toBe(true);
+    expect(menu.querySelector('#menu-title')!.textContent).toMatch(/ストレッチ/);
+  });
 });

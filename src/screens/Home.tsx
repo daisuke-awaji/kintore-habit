@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ChoiceGroup, LevelMeter, Stat } from '../components/Controls';
 import { StaticFigure } from '../components/Figure';
 import { Icon } from '../components/Icon';
@@ -69,15 +69,32 @@ export function Home() {
   const ex = getExercise(menu.exerciseId)!;
   const start = () => navigate('/workout', { ex: ex.id, light: menu.light ? 1 : undefined });
 
+  const menuRef = useRef<HTMLElement>(null);
+  const [pulse, setPulse] = useState(0);
+  // 体の調子を変えると上のメニューが変わるので、メニューを見える位置に戻して光らせる
+  const changeCondition = (v: Condition) => {
+    app.setCondition(v);
+    setOverride(undefined);
+    setPulse((n) => n + 1);
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    menuRef.current?.scrollIntoView?.({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  };
+
+  const week = (
+    <section className="card" aria-labelledby="week-title">
+      <div className="week-head">
+        <h2 id="week-title">今週</h2>
+        <p className="week-count"><strong>{count}</strong> / {goal}回</p>
+      </div>
+      <WeekStrip data={data} weekStartKey={ws} today={today} />
+      <p className="week-msg">{weekMessage(count, goal)}</p>
+    </section>
+  );
+
   return (
     <main className="screen home">
+      <h1 className="sr-only">今日（{formatDateJa(today)}）</h1>
       <StorageBanners />
-      <header className="today-head">
-        <h1>{formatDateJa(today)}</h1>
-        {data.settings.anchor && (
-          <p className="anchor"><Icon name="clock" size={16} />{anchorPhrase(data.settings.anchor)}</p>
-        )}
-      </header>
 
       {doneToday && (
         <section className="card hero hero-done" aria-labelledby="hero-title">
@@ -97,77 +114,75 @@ export function Home() {
         </section>
       )}
 
-      {!doneToday && !restToday && welcome && (
-        <section className="card hero hero-welcome" aria-labelledby="welcome-title">
-          <h2 id="welcome-title">おかえりなさい</h2>
-          <p>また開いてくれて、ありがとうございます。今日は軽めの1分から始めましょう。</p>
+      {!doneToday && !restToday && (
+        <section
+          ref={menuRef}
+          key={pulse}
+          className={`card menu${pulse > 0 ? ' is-updated' : ''}`}
+          aria-labelledby="menu-title"
+        >
+          {(welcome || data.settings.anchor) && (
+            <div className="menu-eyebrow">
+              {welcome && <p className="menu-welcome">おかえりなさい</p>}
+              {data.settings.anchor && (
+                <p className="anchor"><Icon name="clock" size={16} />{anchorPhrase(data.settings.anchor)}</p>
+              )}
+            </div>
+          )}
+          <p className="tags">
+            <span className="tag">{AREA_LABEL[menu.area]}</span>
+            {menu.area !== 'recovery' && <span className="tag tag-outline"><LevelMeter level={menu.level} size="sm" showLabel /></span>}
+            {menu.light && <span className="tag tag-soft">いつもより軽め</span>}
+          </p>
+          <h2 id="menu-title" className="menu-title">{ex.name}</h2>
+          <p className="muted">{ex.summary}</p>
+          <div className="figure-box"><StaticFigure exercise={ex} className="figure-md" /></div>
+          {menu.note && <p className="note">{menu.note}</p>}
+          {menu.caution && (
+            <p className="caution"><Icon name="alert" />{menu.caution}</p>
+          )}
+          <button type="button" className="btn btn-primary btn-xl btn-block" onClick={start}>
+            <Icon name="play" /> 1分はじめる
+          </button>
+          <div className="other">
+            <p className="block-title">ほかのメニュー</p>
+            <ChoiceGroup<Area>
+              label="ほかのメニュー"
+              variant="tile"
+              columns={4}
+              value={override ?? menu.area}
+              onChange={setOverride}
+              options={(['lower', 'upper', 'core', 'recovery'] as Area[]).map((a) => {
+                const e = a === 'recovery' ? getExercise(RECOVERY_ID)! : exerciseFor(a, data.levels[a] as Level);
+                return {
+                  value: a,
+                  name: AREA_LABEL[a],
+                  label: (
+                    <>
+                      <StaticFigure exercise={e} className="figure-thumb" />
+                      <span className="tile-label">{AREA_LABEL[a]}</span>
+                    </>
+                  ),
+                };
+              })}
+            />
+          </div>
         </section>
       )}
 
-      <section className="card" aria-labelledby="week-title">
-        <div className="week-head">
-          <h2 id="week-title">今週</h2>
-          <p className="week-count"><strong>{count}</strong> / {goal}回</p>
-        </div>
-        <WeekStrip data={data} weekStartKey={ws} today={today} />
-        <p className="week-msg">{weekMessage(count, goal)}</p>
-      </section>
+      {week}
 
       {!doneToday && !restToday && (
         <>
           <section className="block" aria-labelledby="cond-title">
-            <h2 id="cond-title" className="block-title">体の調子は？</h2>
+            <h2 id="cond-title" className="block-title">体の調子</h2>
             <ChoiceGroup<Condition>
               label="体の調子"
               columns={2}
               value={condition}
-              onChange={(v) => {
-                app.setCondition(v);
-                setOverride(undefined);
-              }}
+              onChange={changeCondition}
               options={(['normal', 'sore', 'tired', 'pain'] as Condition[]).map((c) => ({ value: c, label: CONDITION_LABEL[c] }))}
             />
-          </section>
-
-          <section className="card menu" aria-labelledby="menu-title">
-            <p className="tags">
-              <span className="tag">{AREA_LABEL[menu.area]}</span>
-              {menu.area !== 'recovery' && <span className="tag tag-outline"><LevelMeter level={menu.level} size="sm" showLabel /></span>}
-              {menu.light && <span className="tag tag-soft">いつもより軽め</span>}
-            </p>
-            <h2 id="menu-title" className="menu-title">{ex.name}</h2>
-            <p className="muted">{ex.summary}</p>
-            <div className="figure-box"><StaticFigure exercise={ex} className="figure-md" /></div>
-            {menu.note && <p className="note">{menu.note}</p>}
-            {menu.caution && (
-              <p className="caution"><Icon name="alert" />{menu.caution}</p>
-            )}
-            <button type="button" className="btn btn-primary btn-xl btn-block" onClick={start}>
-              <Icon name="play" /> 1分はじめる
-            </button>
-            <div className="other">
-              <p className="block-title">ほかのメニュー</p>
-              <ChoiceGroup<Area>
-                label="ほかのメニュー"
-                variant="tile"
-                columns={4}
-                value={override ?? menu.area}
-                onChange={setOverride}
-                options={(['lower', 'upper', 'core', 'recovery'] as Area[]).map((a) => {
-                  const e = a === 'recovery' ? getExercise(RECOVERY_ID)! : exerciseFor(a, data.levels[a] as Level);
-                  return {
-                    value: a,
-                    name: AREA_LABEL[a],
-                    label: (
-                      <>
-                        <StaticFigure exercise={e} className="figure-thumb" />
-                        <span className="tile-label">{AREA_LABEL[a]}</span>
-                      </>
-                    ),
-                  };
-                })}
-              />
-            </div>
           </section>
 
           <button type="button" className="btn btn-secondary btn-block btn-rest" onClick={() => app.setRestDay(today, true)}>

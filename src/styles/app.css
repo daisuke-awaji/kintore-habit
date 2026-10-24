@@ -439,7 +439,16 @@ strong { font-weight: 800; }
 .wo-scrim { position: fixed; inset: 0; z-index: 9; background: color-mix(in srgb, var(--bg) 55%, transparent); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
 
 /* ===== 今日 ===== */
-.today-head h1 { font-size: 1.5rem; }
+.menu-eyebrow { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+.menu-welcome { color: var(--accent-strong); font-size: 1.125rem; font-weight: 800; }
+.menu-eyebrow .anchor { margin-top: 0; }
+.menu { scroll-margin-top: 1rem; }
+.menu.is-updated { animation: menu-updated 1.2s ease-out both; }
+@keyframes menu-updated {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+  25% { box-shadow: 0 0 0 4px var(--accent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+}
 .anchor { display: flex; align-items: center; gap: 0.375rem; color: var(--fg); font-size: 1rem; font-weight: 700; margin-top: 0.25rem; }
 .hero { align-items: center; text-align: center; }
 .hero-stamp {
@@ -454,8 +463,6 @@ strong { font-weight: 800; }
   font-size: 1.25rem;
 }
 .hero-stamp.is-rest { background: transparent; color: var(--fg); border: 2px solid var(--border-strong); }
-.hero-welcome { background: var(--accent-soft); border-color: transparent; text-align: left; align-items: stretch; }
-.hero-welcome h2 { color: var(--accent-strong); font-size: 1.25rem; }
 .week-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
 .week-count { font-size: 1rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .week-count strong { font-size: 1.75rem; color: var(--fg); margin-right: 0.125rem; }
